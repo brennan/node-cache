@@ -1,13 +1,26 @@
 'use strict';
 
-function Cache () {
+function Cache (defaultExpiry, maxSize) {
   var _cache = Object.create(null);
   var _hitCount = 0;
   var _missCount = 0;
   var _size = 0;
   var _debug = false;
+  var _defaultExpiry = defaultExpiry;
+  var _maxCache = maxCache;
+  var keys = [];
 
   this.put = function(key, value, time, timeoutCallback) {
+    if (_size >= _maxSize) {
+      var evictedKey = keys[0];
+      delete _cache[evictedKey];
+      keys.shift();
+    }
+    
+    if (time === undefined) {
+      time = defaultTime;
+    }
+
     if (_debug) {
       console.log('caching: %s = %j (@%s)', key, value, time);
     }
@@ -40,6 +53,10 @@ function Cache () {
     }
 
     _cache[key] = record;
+    if (keys.indexOf(_cache[key]) > -1) {
+      keys.slice(keys.indexOf(_cache[key]))
+    }
+    keys.push(_cache[key]);
 
     return value;
   };
